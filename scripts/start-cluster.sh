@@ -7,10 +7,10 @@ INFRA_DIR="$(dirname "$SCRIPT_DIR")"
 echo "Starting RDMA cluster..."
 echo ""
 
-limactl start --name=node --tty=false "$INFRA_DIR/node.yaml" &
+limactl start --name=node1 --tty=false "$INFRA_DIR/node.yaml" &
 NODE1_PID=$!
 
-limactl start --name=node --tty=false "$INFRA_DIR/node.yaml" &
+limactl start --name=node2 --tty=false "$INFRA_DIR/node.yaml" &
 NODE2_PID=$!
 
 echo "Waiting for VMs to boot..."

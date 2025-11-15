@@ -1,0 +1,65 @@
+arch: x86_64
+vmType: qemu
+cpus: 4
+memory: 4GiB
+disk: 20GiB
+
+containerd:
+  system: false
+  user: false
+
+user:
+  name: ubuntu
+
+mounts:
+  - location: "~/dev/fasts3/"
+    writable: true
+
+networks:
+  - socket: /opt/homebrew/var/run/socket_vmnet
+
+images:
+  - location: "https://cloud-images.ubuntu.com/releases/focal/release/ubuntu-20.04-server-cloudimg-amd64.img"
+    arch: x86_64
+
+firmware:
+  legacyBIOS: true
+
+provision:
+  - mode: system
+    script: |
+      #!/usr/bin/env bash
+      set -euxo pipefail
+      export DEBIAN_FRONTEND=noninteractive
+
+      apt-get update
+      apt-get install -y --no-install-recommends \
+        curl ca-certificates sudo bash git xz-utils lsb-release
+
+      useradd -m -s /bin/bash -G sudo ubuntu || true
+
+      cat > /etc/sudoers.d/90-sudo-nopasswd <<'EOF'
+      %sudo ALL=(ALL) NOPASSWD: ALL
+      EOF
+      chmod 0440 /etc/sudoers.d/90-sudo-nopasswd
+
+      apt-get update
+
+      apt-get install -y --no-install-recommends \
+        rdma-core \
+        rdmacm-utils \
+        ibverbs-utils \
+        ibverbs-providers \
+        libibverbs-dev \
+        librdmacm-dev \
+        build-essential iproute2 ethtool pciutils tcpdump
+
+      modprobe rdma_rxe || true
+      PRIMARY_IFACE=$(ip route | grep default | awk '{print $5}' | head -n1)
+      rdma link add rxe0 type rxe netdev "$PRIMARY_IFACE"
+
+  - mode: user
+    script: |
+      #!/usr/bin/env bash
+      set -euxo pipefail
+      echo "RDMA development environment ready."

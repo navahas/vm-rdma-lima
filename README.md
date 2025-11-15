@@ -20,6 +20,14 @@ sudo rdma link add rxe0 type rxe netdev eth0
 rdma link show
 ```
 
+```bash
+# node2 (server)
+ibv_rc_pingpong -d rxe0 -g 0
+
+# node1 (client)
+ibv_rc_pingpong -d rxe0 -g 0 192.168.105.2
+```
+
 | Command                  | Needed For                    | Package                                              |
 | ------------------------ | ----------------------------- | ---------------------------------------------------- |
 | `modprobe rdma_rxe`      | Load Soft-RoCE kernel module  | `rdma-core`                                          |
