@@ -20,6 +20,11 @@ sudo rdma link add rxe0 type rxe netdev eth0
 rdma link show
 ```
 
+## ubuntu-20.04
+```bash
+sudo apt install linux-modules-extra-$(uname -r)
+```
+
 ```bash
 # node2 (server)
 ibv_rc_pingpong -d rxe0 -g 0

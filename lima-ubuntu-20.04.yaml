@@ -33,8 +33,11 @@ provision:
       export DEBIAN_FRONTEND=noninteractive
 
       apt-get update
+      # Install extra kernel modules
+      # This package provides rdma_rxe which is often missing in cloud images.
       apt-get install -y --no-install-recommends \
-        curl ca-certificates sudo bash git xz-utils lsb-release
+        curl ca-certificates sudo bash git xz-utils lsb-release \
+        linux-modules-extra-$(uname -r)
 
       useradd -m -s /bin/bash -G sudo ubuntu || true
 

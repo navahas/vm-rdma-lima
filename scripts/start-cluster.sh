@@ -7,10 +7,12 @@ INFRA_DIR="$(dirname "$SCRIPT_DIR")"
 echo "Starting RDMA cluster..."
 echo ""
 
-limactl start --name=node1 --tty=false "$INFRA_DIR/node.yaml" &
+VM_CONFIG="lima-ubuntu-20.04.yaml"
+
+limactl start --name=node1 --tty=false "$INFRA_DIR/$VM_CONFIG" &
 NODE1_PID=$!
 
-limactl start --name=node2 --tty=false "$INFRA_DIR/node.yaml" &
+limactl start --name=node2 --tty=false "$INFRA_DIR/$VM_CONFIG" &
 NODE2_PID=$!
 
 echo "Waiting for VMs to boot..."
