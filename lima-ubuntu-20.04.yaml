@@ -32,12 +32,13 @@ provision:
       set -euxo pipefail
       export DEBIAN_FRONTEND=noninteractive
 
+      # Enable universe repository for ibverbs-utils
+      add-apt-repository -y universe
       apt-get update
-      # Install extra kernel modules
-      # This package provides rdma_rxe which is often missing in cloud images.
+
+      # Install basic utilities
       apt-get install -y --no-install-recommends \
-        curl ca-certificates sudo bash git xz-utils lsb-release \
-        linux-modules-extra-$(uname -r)
+        curl ca-certificates sudo bash git xz-utils lsb-release make
 
       useradd -m -s /bin/bash -G sudo ubuntu || true
 
@@ -48,6 +49,12 @@ provision:
 
       apt-get update
 
+      # Install kernel modules - try specific version first, fallback to generic
+      KERNEL_VERSION=$(uname -r)
+      apt-get install -y --no-install-recommends linux-modules-extra-${KERNEL_VERSION} || \
+        apt-get install -y --no-install-recommends linux-modules-extra-generic || true
+
+      # Install RDMA packages
       apt-get install -y --no-install-recommends \
         rdma-core \
         rdmacm-utils \
@@ -55,11 +62,16 @@ provision:
         ibverbs-providers \
         libibverbs-dev \
         librdmacm-dev \
-        build-essential iproute2 ethtool pciutils tcpdump
+        build-essential \
+        iproute2 \
+        ethtool \
+        pciutils \
+        tcpdump
 
+      # Load RDMA RXE module and configure
       modprobe rdma_rxe || true
       PRIMARY_IFACE=$(ip route | grep default | awk '{print $5}' | head -n1)
-      rdma link add rxe0 type rxe netdev "$PRIMARY_IFACE"
+      rdma link add rxe0 type rxe netdev "$PRIMARY_IFACE" || true
 
   - mode: user
     script: |
